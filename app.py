@@ -112,8 +112,8 @@ def get_list():
         category = row[2] if len(row) > 2 else ""
         
         if name.strip():
-            # Retroactively categorize empty or Misc items
-            if category.strip() == "" or category.strip() == "Misc.":
+            # Retroactively categorize empty items
+            if category.strip() == "":
                 original_category = category
                 category = "Misc."
                 if vision_model:
