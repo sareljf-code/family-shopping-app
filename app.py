@@ -116,12 +116,21 @@ def get_list():
                     try:
                         cat_prompt = f"Categorize this grocery item: '{name}'. It may be in Hebrew. You MUST choose exactly one category from this exact list: [Fruit & Veg., Fish & Meat, Veg. substitutes, Toiletries, Cleaning, Misc.]. Return ONLY the exact string from the list."
                         cat_response = vision_model.generate_content(cat_prompt)
-                        detected_cat = cat_response.text.strip()
-                        if any(vc.lower() in detected_cat.lower() for vc in valid_categories):
-                            for vc in valid_categories:
-                                if vc.lower() in detected_cat.lower():
-                                    category = vc
-                                    break
+                        detected_cat = cat_response.text.strip().lower()
+                        
+                        # Robust keyword matching
+                        if "fruit" in detected_cat or ("veg" in detected_cat and "substitute" not in detected_cat):
+                            category = "Fruit & Veg."
+                        elif "fish" in detected_cat or "meat" in detected_cat or "poultry" in detected_cat or "chicken" in detected_cat:
+                            category = "Fish & Meat"
+                        elif "substitute" in detected_cat or "vegan" in detected_cat:
+                            category = "Veg. substitutes"
+                        elif "toilet" in detected_cat or "bath" in detected_cat or "personal" in detected_cat or "soap" in detected_cat:
+                            category = "Toiletries"
+                        elif "clean" in detected_cat or "detergent" in detected_cat:
+                            category = "Cleaning"
+                        else:
+                            category = "Misc."
                     except Exception as e:
                         print(f"Sync categorization error: {e}")
                 
@@ -155,16 +164,23 @@ def add_item():
     category = "Misc."
     if vision_model:
         try:
-            cat_prompt = f"Categorize the grocery item '{name}'. The item name is likely in Hebrew. You MUST return exactly one of these English strings: 'Fruit & Veg.', 'Fish & Meat', 'Veg. substitutes', 'Toiletries', 'Cleaning', 'Misc.'. Do not translate the category name. Return ONLY the English string."
+            cat_prompt = f"Categorize this grocery item: '{name}'. It may be in Hebrew. You MUST choose exactly one category from this exact list: [Fruit & Veg., Fish & Meat, Veg. substitutes, Toiletries, Cleaning, Misc.]. Return ONLY the exact string from the list."
             cat_response = vision_model.generate_content(cat_prompt)
-            detected_cat = cat_response.text.strip()
-            valid_categories = ["Fruit & Veg.", "Fish & Meat", "Veg. substitutes", "Toiletries", "Cleaning", "Misc."]
-            if any(vc.lower() in detected_cat.lower() for vc in valid_categories):
-                # Find exact match
-                for vc in valid_categories:
-                    if vc.lower() in detected_cat.lower():
-                        category = vc
-                        break
+            detected_cat = cat_response.text.strip().lower()
+            
+            # Robust keyword matching
+            if "fruit" in detected_cat or ("veg" in detected_cat and "substitute" not in detected_cat):
+                category = "Fruit & Veg."
+            elif "fish" in detected_cat or "meat" in detected_cat or "poultry" in detected_cat or "chicken" in detected_cat:
+                category = "Fish & Meat"
+            elif "substitute" in detected_cat or "vegan" in detected_cat:
+                category = "Veg. substitutes"
+            elif "toilet" in detected_cat or "bath" in detected_cat or "personal" in detected_cat or "soap" in detected_cat:
+                category = "Toiletries"
+            elif "clean" in detected_cat or "detergent" in detected_cat:
+                category = "Cleaning"
+            else:
+                category = "Misc."
         except Exception as e:
             print(f"Categorization error: {e}")
 
