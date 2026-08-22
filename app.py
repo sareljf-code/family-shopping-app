@@ -7,6 +7,7 @@ from google.oauth2.service_account import Credentials
 import google.generativeai as genai
 from PIL import Image
 import io
+import threading
 
 app = Flask(__name__)
 
@@ -168,17 +169,7 @@ def get_list():
             
     return jsonify(items)
 
-@app.route('/api/add', methods=['POST'])
-def add_item():
-    """Adds a new item to the Google Sheet."""
-    data = request.json
-    name = data.get('name')
-    quantity = data.get('quantity', 1)
-    
-    if not name:
-        return jsonify({"error": "Name is required"}), 400
-        
-    # Categorize the item using Gemini
+def background_categorize(name, sheet):
     category = "Misc."
     if vision_model:
         try:
@@ -215,11 +206,36 @@ def add_item():
                 category = "Misc."
         except Exception as e:
             print(f"Categorization error: {e}")
+            
+    # Find the row and update it
+    try:
+        values = sheet.get_all_values()
+        for i in range(len(values)-1, -1, -1):
+            row = values[i]
+            if len(row) > 2 and row[0] == name and row[2] == "Pending...":
+                sheet.update_cell(i + 1, 3, category)
+                break
+    except Exception as e:
+        print(f"Background save error: {e}")
 
+@app.route('/api/add', methods=['POST'])
+def add_item():
+    """Adds a new item to the Google Sheet."""
+    data = request.json
+    name = data.get('name')
+    quantity = data.get('quantity', 1)
+    
+    if not name:
+        return jsonify({"error": "Name is required"}), 400
+        
     sheet = get_sheet()
     if sheet:
-        # Append name, quantity, and category
-        sheet.append_row([name, quantity, category])
+        # Append instantly as Pending...
+        sheet.append_row([name, quantity, "Pending..."])
+        
+        # Kick off background categorization
+        threading.Thread(target=background_categorize, args=(name, sheet)).start()
+        
         return jsonify({"success": True})
     else:
         return jsonify({"error": "Google Sheets not configured"}), 500
