@@ -92,6 +92,8 @@ def get_list():
     
     start_idx = 1 if has_headers else 0
     
+    valid_categories = ["Fruit & Veg.", "Fish & Meat", "Veg. substitutes", "Toiletries", "Cleaning", "Misc."]
+    
     items = []
     # We will use the Google Sheet row number as the unique ID for deletion
     # Row numbers in gspread are 1-indexed
@@ -103,9 +105,31 @@ def get_list():
         # Assume first column is the item name, second column (if exists) is quantity
         name = row[0] if len(row) > 0 else ""
         quantity = row[1] if len(row) > 1 else "1"
-        category = row[2] if len(row) > 2 else "Misc."
+        category = row[2] if len(row) > 2 else ""
         
         if name.strip():
+            # If item lacks a category (e.g. older items), retroactively categorize it
+            if category.strip() == "":
+                category = "Misc."
+                if vision_model:
+                    try:
+                        cat_prompt = f"Categorize the grocery item '{name}'. The item name is likely in Hebrew. You MUST return exactly one of these English strings: 'Fruit & Veg.', 'Fish & Meat', 'Veg. substitutes', 'Toiletries', 'Cleaning', 'Misc.'. Do not translate the category name. Return ONLY the English string."
+                        cat_response = vision_model.generate_content(cat_prompt)
+                        detected_cat = cat_response.text.strip()
+                        if any(vc.lower() in detected_cat.lower() for vc in valid_categories):
+                            for vc in valid_categories:
+                                if vc.lower() in detected_cat.lower():
+                                    category = vc
+                                    break
+                    except Exception as e:
+                        print(f"Sync categorization error: {e}")
+                
+                # Save the new category back to the Google Sheet so we don't have to do it again
+                try:
+                    sheet.update_cell(i + 1, 3, category)
+                except Exception as e:
+                    print(f"Sync save error: {e}")
+
             items.append({
                 "id": str(i + 1), # 1-indexed row number
                 "name": name,
