@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Family Shopping List</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #38bdf8;
+            --accent-hover: #0ea5e9;
+            --danger: #f43f5e;
+            --success: #10b981;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg-gradient);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 20px;
+            padding-bottom: 100px; /* Space for bottom nav */
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-top: 20px;
+        }
+
+        h1 {
+            font-weight: 800;
+            font-size: 2.2rem;
+            background: linear-gradient(to right, #38bdf8, #818cf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 5px;
+        }
+
+        p.subtitle {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .item-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .item {
+            background: rgba(0,0,0,0.2);
+            border-radius: 12px;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid var(--glass-border);
+            animation: fadeIn 0.4s ease forwards;
+            opacity: 0;
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; transform: translateY(0); }
+            from { opacity: 0; transform: translateY(10px); }
+        }
+
+        .item-details {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .item-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .item-qty {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            font-weight: 600;
+            min-width: 20px;
+            text-align: center;
+        }
+
+        .qty-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 8px;
+        }
+
+        .btn-qty {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--glass-border);
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+        }
+        
+        .btn-qty:active {
+            transform: scale(0.9);
+            background: var(--accent);
+        }
+
+        .btn-delete {
+            background: rgba(244, 63, 94, 0.1);
+            border: 1px solid rgba(244, 63, 94, 0.3);
+            color: var(--danger);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-delete:active {
+            transform: scale(0.9);
+            background: var(--danger);
+            color: white;
+        }
+
+        /* Fixed Bottom Action Bar */
+        .bottom-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid var(--glass-border);
+            padding: 15px 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 100;
+        }
+
+        .input-group {
+            flex: 1;
+            display: flex;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 15px;
+            overflow: hidden;
+        }
+
+        input[type="text"], input[type="number"] {
+            background: transparent;
+            border: none;
+            color: white;
+            padding: 15px;
+            font-family: inherit;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        input[type="text"] {
+            flex: 2;
+            border-right: 1px solid var(--glass-border);
+        }
+
+        input[type="number"] {
+            flex: 1;
+            min-width: 60px;
+        }
+
+        input::placeholder {
+            color: rgba(255,255,255,0.3);
+        }
+
+        .btn-add, .btn-camera {
+            border: none;
+            border-radius: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .btn-add {
+            background: var(--accent);
+            color: #0f172a;
+            font-weight: 800;
+            padding: 0 20px;
+        }
+
+        .btn-add:active {
+            transform: scale(0.95);
+            background: var(--accent-hover);
+        }
+
+        .btn-camera {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            color: var(--accent);
+            padding: 0 15px;
+            position: relative;
+        }
+        
+        .btn-camera input[type="file"] {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .btn-camera:active {
+            transform: scale(0.95);
+        }
+
+        .loader {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: var(--accent);
+        }
+        
+        .category-header {
+            font-weight: 800;
+            font-size: 1.15rem;
+            color: var(--accent);
+            margin-top: 20px;
+            margin-bottom: 5px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid var(--glass-border);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* SVG Icons */
+        .icon {
+            width: 24px;
+            height: 24px;
+            stroke-width: 2;
+            stroke: currentColor;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Family Cart</h1>
+        <p class="subtitle">Synced with Google Sheets</p>
+    </header>
+
+    <div class="glass-panel">
+        <div id="loader" class="loader">Syncing...</div>
+        <ul class="item-list" id="shoppingList">
+            <!-- Items will be injected here via JS -->
+        </ul>
+    </div>
+
+    <div class="bottom-bar">
+        <div class="btn-camera">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+            <input type="file" accept="image/*" capture="environment" id="cameraInput">
+        </div>
+        <div class="input-group">
+            <input type="text" id="itemName" placeholder="Item name..." />
+            <input type="number" id="itemQty" placeholder="Qty" value="1" />
+        </div>
+        <button class="btn-add" id="addBtn">
+            <svg class="icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        </button>
+    </div>
+
+    <script>
+        const API_BASE = ''; // relative path
+        const listEl = document.getElementById('shoppingList');
+        const loaderEl = document.getElementById('loader');
+        const itemNameEl = document.getElementById('itemName');
+        const itemQtyEl = document.getElementById('itemQty');
+        const addBtn = document.getElementById('addBtn');
+        const cameraInput = document.getElementById('cameraInput');
+
+        // Fetch List
+        async function fetchList() {
+            loaderEl.style.display = 'block';
+            try {
+                const res = await fetch(`${API_BASE}/api/list`);
+                const data = await res.json();
+                renderList(data);
+            } catch (err) {
+                console.error("Error fetching list:", err);
+            } finally {
+                loaderEl.style.display = 'none';
+            }
+        }
+
+        // Render List
+        function renderList(items) {
+            listEl.innerHTML = '';
+            
+            // Group items
+            const grouped = {};
+            items.forEach(item => {
+                const cat = item.category || "Misc.";
+                if (!grouped[cat]) grouped[cat] = [];
+                grouped[cat].push(item);
+            });
+            
+            // Define strict order
+            const order = ["Fruit & Veg.", "Fish & Meat", "Veg. substitutes", "Toiletries", "Cleaning", "Misc."];
+            
+            // Render groups in order
+            let delay = 0;
+            order.forEach(cat => {
+                if (grouped[cat] && grouped[cat].length > 0) {
+                    // Render header
+                    const header = document.createElement('li');
+                    header.className = 'category-header';
+                    header.innerText = cat;
+                    listEl.appendChild(header);
+                    
+                    // Render items
+                    grouped[cat].forEach(item => {
+                        const li = document.createElement('li');
+                        li.className = 'item';
+                        li.style.animationDelay = `${delay * 0.05}s`;
+                        li.innerHTML = `
+                            <div class="item-details">
+                                <span class="item-name">${item.name}</span>
+                                <div class="qty-controls">
+                                    <button class="btn-qty" onclick="updateQty('${item.id}', ${parseInt(item.quantity) - 1})">-</button>
+                                    <span class="item-qty">${item.quantity}</span>
+                                    <button class="btn-qty" onclick="updateQty('${item.id}', ${parseInt(item.quantity) + 1})">+</button>
+                                </div>
+                            </div>
+                            <button class="btn-delete" onclick="removeItem('${item.id}')">
+                                <svg class="icon" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                            </button>
+                        `;
+                        listEl.appendChild(li);
+                        delay++;
+                    });
+                }
+            });
+            
+            // Catch any remaining categories not in the expected list
+            Object.keys(grouped).forEach(cat => {
+                if (!order.includes(cat)) {
+                    const header = document.createElement('li');
+                    header.className = 'category-header';
+                    header.innerText = cat;
+                    listEl.appendChild(header);
+                    
+                    grouped[cat].forEach(item => {
+                        const li = document.createElement('li');
+                        li.className = 'item';
+                        li.style.animationDelay = `${delay * 0.05}s`;
+                        li.innerHTML = `
+                            <div class="item-details">
+                                <span class="item-name">${item.name}</span>
+                                <div class="qty-controls">
+                                    <button class="btn-qty" onclick="updateQty('${item.id}', ${parseInt(item.quantity) - 1})">-</button>
+                                    <span class="item-qty">${item.quantity}</span>
+                                    <button class="btn-qty" onclick="updateQty('${item.id}', ${parseInt(item.quantity) + 1})">+</button>
+                                </div>
+                            </div>
+                            <button class="btn-delete" onclick="removeItem('${item.id}')">
+                                <svg class="icon" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                            </button>
+                        `;
+                        listEl.appendChild(li);
+                        delay++;
+                    });
+                }
+            });
+        }
+
+        // Add Item Manually
+        addBtn.addEventListener('click', async () => {
+            const name = itemNameEl.value.trim();
+            const qty = itemQtyEl.value.trim();
+            if (!name) return;
+
+            // Optimistic UI update
+            itemNameEl.value = '';
+            itemQtyEl.value = '1';
+            
+            try {
+                await fetch(`${API_BASE}/api/add`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, quantity: qty })
+                });
+                fetchList(); // Refresh
+            } catch (err) {
+                console.error("Error adding:", err);
+            }
+        });
+
+        // Update Quantity
+        async function updateQty(id, newQty) {
+            if (newQty < 1) {
+                removeItem(id);
+                return;
+            }
+            try {
+                await fetch(`${API_BASE}/api/update_qty`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id, quantity: newQty })
+                });
+                fetchList(); // Refresh
+            } catch (err) {
+                console.error("Error updating quantity:", err);
+            }
+        }
+
+        // Remove Item
+        async function removeItem(id) {
+            try {
+                await fetch(`${API_BASE}/api/remove`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id })
+                });
+                fetchList();
+            } catch (err) {
+                console.error("Error removing:", err);
+            }
+        }
+
+        // Handle Camera Capture
+        cameraInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append('image', file);
+
+            itemNameEl.value = "Analyzing image...";
+            
+            try {
+                const res = await fetch(`${API_BASE}/api/vision`, {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+                
+                if (data.productName) {
+                    itemNameEl.value = data.productName;
+                } else {
+                    itemNameEl.value = "";
+                    alert("Could not identify product.");
+                }
+            } catch (err) {
+                console.error("Error analyzing image:", err);
+                itemNameEl.value = "";
+            }
+            
+            // Clear input so it can trigger again
+            cameraInput.value = '';
+        });
+
+        // Initial fetch
+        fetchList();
+    </script>
+</body>
+</html>
