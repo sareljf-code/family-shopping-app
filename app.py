@@ -129,7 +129,7 @@ def add_item():
     category = "Misc."
     if vision_model:
         try:
-            cat_prompt = f"Categorize the grocery item '{name}' into exactly ONE of these categories: Fruit & Veg., Fish & Meat, Veg. substitutes, Toiletries, Cleaning, Misc. The item name might be in Hebrew or English. Return ONLY the exact category name from the list, nothing else."
+            cat_prompt = f"Categorize the grocery item '{name}'. The item name is likely in Hebrew. You MUST return exactly one of these English strings: 'Fruit & Veg.', 'Fish & Meat', 'Veg. substitutes', 'Toiletries', 'Cleaning', 'Misc.'. Do not translate the category name. Return ONLY the English string."
             cat_response = vision_model.generate_content(cat_prompt)
             detected_cat = cat_response.text.strip()
             valid_categories = ["Fruit & Veg.", "Fish & Meat", "Veg. substitutes", "Toiletries", "Cleaning", "Misc."]
