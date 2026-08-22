@@ -108,12 +108,13 @@ def get_list():
         category = row[2] if len(row) > 2 else ""
         
         if name.strip():
-            # If item lacks a category (e.g. older items), retroactively categorize it
-            if category.strip() == "":
+            # Retroactively categorize empty or Misc items
+            if category.strip() == "" or category.strip() == "Misc.":
+                original_category = category
                 category = "Misc."
                 if vision_model:
                     try:
-                        cat_prompt = f"Categorize the grocery item '{name}'. The item name is likely in Hebrew. You MUST return exactly one of these English strings: 'Fruit & Veg.', 'Fish & Meat', 'Veg. substitutes', 'Toiletries', 'Cleaning', 'Misc.'. Do not translate the category name. Return ONLY the English string."
+                        cat_prompt = f"Categorize this grocery item: '{name}'. It may be in Hebrew. You MUST choose exactly one category from this exact list: [Fruit & Veg., Fish & Meat, Veg. substitutes, Toiletries, Cleaning, Misc.]. Return ONLY the exact string from the list."
                         cat_response = vision_model.generate_content(cat_prompt)
                         detected_cat = cat_response.text.strip()
                         if any(vc.lower() in detected_cat.lower() for vc in valid_categories):
@@ -124,11 +125,12 @@ def get_list():
                     except Exception as e:
                         print(f"Sync categorization error: {e}")
                 
-                # Save the new category back to the Google Sheet so we don't have to do it again
-                try:
-                    sheet.update_cell(i + 1, 3, category)
-                except Exception as e:
-                    print(f"Sync save error: {e}")
+                # Only save if it actually changed or if it was previously completely empty
+                if category != original_category or original_category.strip() == "":
+                    try:
+                        sheet.update_cell(i + 1, 3, category)
+                    except Exception as e:
+                        print(f"Sync save error: {e}")
 
             items.append({
                 "id": str(i + 1), # 1-indexed row number
