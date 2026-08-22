@@ -476,24 +476,14 @@
             const formData = new FormData();
             formData.append('image', file);
 
-            itemNameEl.value = "Analyzing image...";
-            
             try {
                 const res = await fetch(`${API_BASE}/api/vision`, {
                     method: 'POST',
                     body: formData
                 });
-                const data = await res.json();
-                
-                if (data.productName) {
-                    itemNameEl.value = data.productName;
-                } else {
-                    itemNameEl.value = "";
-                    alert("Could not identify product.");
-                }
+                fetchList(); // Refresh the list to show the 'Analyzing photo...' row
             } catch (err) {
-                console.error("Error analyzing image:", err);
-                itemNameEl.value = "";
+                console.error("Error sending image:", err);
             }
             
             // Clear input so it can trigger again

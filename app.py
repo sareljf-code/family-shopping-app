@@ -283,6 +283,69 @@ def update_qty():
             
     return jsonify({"error": "Google Sheets not configured"}), 500
 
+def background_vision_and_categorize(image_bytes, sheet):
+    product_name = "Unknown Product"
+    category = "Misc."
+    
+    if vision_model:
+        try:
+            image = Image.open(io.BytesIO(image_bytes))
+            prompt = "Look at this image and extract the name of the main grocery or shopping product. The product name or text on the package may be in Hebrew or English. Keep the name very brief (1-3 words). Also, categorize it into exactly one of these categories: [Fruit & Veg., Fish & Meat, Dairy & Eggs, Bakery & Bread, Pantry & Dry Goods, Snacks & Sweets, Beverages, Frozen Foods, Toiletries, Cleaning, Pharmacy & Health, Pet Supplies, Misc.]. Return the response in this EXACT format: 'Name: <product_name> | Category: <category>'"
+            
+            response = vision_model.generate_content([prompt, image])
+            text = response.text.strip()
+            
+            if "Name:" in text and "Category:" in text:
+                parts = text.split("|")
+                product_name = parts[0].replace("Name:", "").strip()
+                detected_cat = parts[1].replace("Category:", "").strip().lower()
+                
+                # Robust keyword matching
+                if "fruit" in detected_cat or "veg" in detected_cat or "produce" in detected_cat:
+                    category = "Fruit & Veg."
+                elif "fish" in detected_cat or "meat" in detected_cat or "poultry" in detected_cat or "chicken" in detected_cat or "beef" in detected_cat:
+                    category = "Fish & Meat"
+                elif "dairy" in detected_cat or "egg" in detected_cat or "milk" in detected_cat or "cheese" in detected_cat:
+                    category = "Dairy & Eggs"
+                elif "bakery" in detected_cat or "bread" in detected_cat or "pastry" in detected_cat:
+                    category = "Bakery & Bread"
+                elif "pantry" in detected_cat or "dry" in detected_cat or "pasta" in detected_cat or "rice" in detected_cat or "can" in detected_cat:
+                    category = "Pantry & Dry Goods"
+                elif "snack" in detected_cat or "sweet" in detected_cat or "candy" in detected_cat or "chocolate" in detected_cat or "chip" in detected_cat:
+                    category = "Snacks & Sweets"
+                elif "beverage" in detected_cat or "drink" in detected_cat or "water" in detected_cat or "juice" in detected_cat or "soda" in detected_cat:
+                    category = "Beverages"
+                elif "frozen" in detected_cat or "ice" in detected_cat:
+                    category = "Frozen Foods"
+                elif "toilet" in detected_cat or "bath" in detected_cat or "personal" in detected_cat or "soap" in detected_cat or "shampoo" in detected_cat:
+                    category = "Toiletries"
+                elif "clean" in detected_cat or "detergent" in detected_cat or "wash" in detected_cat:
+                    category = "Cleaning"
+                elif "pharmacy" in detected_cat or "health" in detected_cat or "vitamin" in detected_cat or "medicine" in detected_cat:
+                    category = "Pharmacy & Health"
+                elif "pet" in detected_cat or "dog" in detected_cat or "cat" in detected_cat:
+                    category = "Pet Supplies"
+                else:
+                    category = "Misc."
+            else:
+                product_name = text[:30] # Fallback if format is weird
+                
+        except Exception as e:
+            print(f"Vision API Error: {e}")
+            product_name = "Analysis Failed"
+            
+    # Find the placeholder row and update it
+    try:
+        values = sheet.get_all_values()
+        for i in range(len(values)-1, -1, -1):
+            row = values[i]
+            if len(row) > 2 and row[0] == "📷 Analyzing photo..." and row[2] == "Pending...":
+                sheet.update_cell(i + 1, 1, product_name)
+                sheet.update_cell(i + 1, 3, category)
+                break
+    except Exception as e:
+        print(f"Background vision save error: {e}")
+
 @app.route('/api/vision', methods=['POST'])
 def analyze_image():
     """Receives an image, sends to Gemini, returns product name."""
@@ -293,21 +356,19 @@ def analyze_image():
         return jsonify({"error": "Gemini API key not configured"}), 500
 
     file = request.files['image']
-    try:
-        # Read image
-        img_bytes = file.read()
-        image = Image.open(io.BytesIO(img_bytes))
+    img_bytes = file.read()
+    
+    sheet = get_sheet()
+    if sheet:
+        # Instantly append placeholder
+        sheet.append_row(["📷 Analyzing photo...", 1, "Pending..."])
         
-        # Send to Gemini
-        prompt = "Look at this image and extract the name of the main grocery or shopping product. The product name or text on the package may be in Hebrew or English. Return ONLY the name of the product, nothing else. Keep it brief and do not include any extra sentences."
-        response = vision_model.generate_content([prompt, image])
+        # Kick off background vision processing
+        threading.Thread(target=background_vision_and_categorize, args=(img_bytes, sheet)).start()
         
-        product_name = response.text.strip()
-        
-        return jsonify({"productName": product_name})
-    except Exception as e:
-        print(f"Vision API Error: {e}")
-        return jsonify({"error": "Failed to analyze image"}), 500
+        return jsonify({"success": True})
+    else:
+        return jsonify({"error": "Google Sheets not configured"}), 500
 
 if __name__ == '__main__':
     # Run the Flask app
