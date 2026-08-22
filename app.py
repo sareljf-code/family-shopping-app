@@ -61,7 +61,7 @@ def get_sheet():
 # Initialize Gemini
 if GEMINI_API_KEY and GEMINI_API_KEY != 'YOUR_GEMINI_API_KEY_HERE':
     genai.configure(api_key=GEMINI_API_KEY)
-    vision_model = genai.GenerativeModel('gemini-1.5-flash')
+    vision_model = genai.GenerativeModel('gemini-2.5-flash')
 else:
     vision_model = None
 
