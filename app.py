@@ -92,7 +92,11 @@ def get_list():
     
     start_idx = 1 if has_headers else 0
     
-    valid_categories = ["Fruit & Veg.", "Fish & Meat", "Veg. substitutes", "Toiletries", "Cleaning", "Misc."]
+    valid_categories = [
+        "Fruit & Veg.", "Fish & Meat", "Dairy & Eggs", "Bakery & Bread", 
+        "Pantry & Dry Goods", "Snacks & Sweets", "Beverages", "Frozen Foods", 
+        "Toiletries", "Cleaning", "Pharmacy & Health", "Pet Supplies", "Misc."
+    ]
     
     items = []
     # We will use the Google Sheet row number as the unique ID for deletion
@@ -114,21 +118,35 @@ def get_list():
                 category = "Misc."
                 if vision_model:
                     try:
-                        cat_prompt = f"Categorize this grocery item: '{name}'. It may be in Hebrew. You MUST choose exactly one category from this exact list: [Fruit & Veg., Fish & Meat, Veg. substitutes, Toiletries, Cleaning, Misc.]. Return ONLY the exact string from the list."
+                        cat_prompt = f"Categorize this grocery item: '{name}'. It may be in Hebrew. You MUST choose exactly one category from this exact list: [Fruit & Veg., Fish & Meat, Dairy & Eggs, Bakery & Bread, Pantry & Dry Goods, Snacks & Sweets, Beverages, Frozen Foods, Toiletries, Cleaning, Pharmacy & Health, Pet Supplies, Misc.]. Return ONLY the exact string from the list."
                         cat_response = vision_model.generate_content(cat_prompt)
                         detected_cat = cat_response.text.strip().lower()
                         
                         # Robust keyword matching
-                        if "fruit" in detected_cat or ("veg" in detected_cat and "substitute" not in detected_cat):
+                        if "fruit" in detected_cat or "veg" in detected_cat or "produce" in detected_cat:
                             category = "Fruit & Veg."
-                        elif "fish" in detected_cat or "meat" in detected_cat or "poultry" in detected_cat or "chicken" in detected_cat:
+                        elif "fish" in detected_cat or "meat" in detected_cat or "poultry" in detected_cat or "chicken" in detected_cat or "beef" in detected_cat:
                             category = "Fish & Meat"
-                        elif "substitute" in detected_cat or "vegan" in detected_cat:
-                            category = "Veg. substitutes"
-                        elif "toilet" in detected_cat or "bath" in detected_cat or "personal" in detected_cat or "soap" in detected_cat:
+                        elif "dairy" in detected_cat or "egg" in detected_cat or "milk" in detected_cat or "cheese" in detected_cat:
+                            category = "Dairy & Eggs"
+                        elif "bakery" in detected_cat or "bread" in detected_cat or "pastry" in detected_cat:
+                            category = "Bakery & Bread"
+                        elif "pantry" in detected_cat or "dry" in detected_cat or "pasta" in detected_cat or "rice" in detected_cat or "can" in detected_cat:
+                            category = "Pantry & Dry Goods"
+                        elif "snack" in detected_cat or "sweet" in detected_cat or "candy" in detected_cat or "chocolate" in detected_cat or "chip" in detected_cat:
+                            category = "Snacks & Sweets"
+                        elif "beverage" in detected_cat or "drink" in detected_cat or "water" in detected_cat or "juice" in detected_cat or "soda" in detected_cat:
+                            category = "Beverages"
+                        elif "frozen" in detected_cat or "ice" in detected_cat:
+                            category = "Frozen Foods"
+                        elif "toilet" in detected_cat or "bath" in detected_cat or "personal" in detected_cat or "soap" in detected_cat or "shampoo" in detected_cat:
                             category = "Toiletries"
-                        elif "clean" in detected_cat or "detergent" in detected_cat:
+                        elif "clean" in detected_cat or "detergent" in detected_cat or "wash" in detected_cat:
                             category = "Cleaning"
+                        elif "pharmacy" in detected_cat or "health" in detected_cat or "vitamin" in detected_cat or "medicine" in detected_cat:
+                            category = "Pharmacy & Health"
+                        elif "pet" in detected_cat or "dog" in detected_cat or "cat" in detected_cat:
+                            category = "Pet Supplies"
                         else:
                             category = "Misc."
                     except Exception as e:
@@ -164,21 +182,35 @@ def add_item():
     category = "Misc."
     if vision_model:
         try:
-            cat_prompt = f"Categorize this grocery item: '{name}'. It may be in Hebrew. You MUST choose exactly one category from this exact list: [Fruit & Veg., Fish & Meat, Veg. substitutes, Toiletries, Cleaning, Misc.]. Return ONLY the exact string from the list."
+            cat_prompt = f"Categorize this grocery item: '{name}'. It may be in Hebrew. You MUST choose exactly one category from this exact list: [Fruit & Veg., Fish & Meat, Dairy & Eggs, Bakery & Bread, Pantry & Dry Goods, Snacks & Sweets, Beverages, Frozen Foods, Toiletries, Cleaning, Pharmacy & Health, Pet Supplies, Misc.]. Return ONLY the exact string from the list."
             cat_response = vision_model.generate_content(cat_prompt)
             detected_cat = cat_response.text.strip().lower()
             
             # Robust keyword matching
-            if "fruit" in detected_cat or ("veg" in detected_cat and "substitute" not in detected_cat):
+            if "fruit" in detected_cat or "veg" in detected_cat or "produce" in detected_cat:
                 category = "Fruit & Veg."
-            elif "fish" in detected_cat or "meat" in detected_cat or "poultry" in detected_cat or "chicken" in detected_cat:
+            elif "fish" in detected_cat or "meat" in detected_cat or "poultry" in detected_cat or "chicken" in detected_cat or "beef" in detected_cat:
                 category = "Fish & Meat"
-            elif "substitute" in detected_cat or "vegan" in detected_cat:
-                category = "Veg. substitutes"
-            elif "toilet" in detected_cat or "bath" in detected_cat or "personal" in detected_cat or "soap" in detected_cat:
+            elif "dairy" in detected_cat or "egg" in detected_cat or "milk" in detected_cat or "cheese" in detected_cat:
+                category = "Dairy & Eggs"
+            elif "bakery" in detected_cat or "bread" in detected_cat or "pastry" in detected_cat:
+                category = "Bakery & Bread"
+            elif "pantry" in detected_cat or "dry" in detected_cat or "pasta" in detected_cat or "rice" in detected_cat or "can" in detected_cat:
+                category = "Pantry & Dry Goods"
+            elif "snack" in detected_cat or "sweet" in detected_cat or "candy" in detected_cat or "chocolate" in detected_cat or "chip" in detected_cat:
+                category = "Snacks & Sweets"
+            elif "beverage" in detected_cat or "drink" in detected_cat or "water" in detected_cat or "juice" in detected_cat or "soda" in detected_cat:
+                category = "Beverages"
+            elif "frozen" in detected_cat or "ice" in detected_cat:
+                category = "Frozen Foods"
+            elif "toilet" in detected_cat or "bath" in detected_cat or "personal" in detected_cat or "soap" in detected_cat or "shampoo" in detected_cat:
                 category = "Toiletries"
-            elif "clean" in detected_cat or "detergent" in detected_cat:
+            elif "clean" in detected_cat or "detergent" in detected_cat or "wash" in detected_cat:
                 category = "Cleaning"
+            elif "pharmacy" in detected_cat or "health" in detected_cat or "vitamin" in detected_cat or "medicine" in detected_cat:
+                category = "Pharmacy & Health"
+            elif "pet" in detected_cat or "dog" in detected_cat or "cat" in detected_cat:
+                category = "Pet Supplies"
             else:
                 category = "Misc."
         except Exception as e:

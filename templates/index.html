@@ -343,8 +343,11 @@
             });
             
             // Define strict order
-            const order = ["Fruit & Veg.", "Fish & Meat", "Veg. substitutes", "Toiletries", "Cleaning", "Misc."];
-            
+            const order = [
+                "Fruit & Veg.", "Fish & Meat", "Dairy & Eggs", "Bakery & Bread", 
+                "Pantry & Dry Goods", "Snacks & Sweets", "Beverages", "Frozen Foods", 
+                "Toiletries", "Cleaning", "Pharmacy & Health", "Pet Supplies", "Misc."
+            ];
             // Render groups in order
             let delay = 0;
             order.forEach(cat => {
