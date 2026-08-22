@@ -290,7 +290,7 @@ def background_vision_and_categorize(image_bytes, sheet):
     if vision_model:
         try:
             image = Image.open(io.BytesIO(image_bytes))
-            prompt = "Look at this image and extract the name of the main grocery or shopping product. The product name or text on the package may be in Hebrew or English. Keep the name very brief (1-3 words). Also, categorize it into exactly one of these categories: [Fruit & Veg., Fish & Meat, Dairy & Eggs, Bakery & Bread, Pantry & Dry Goods, Snacks & Sweets, Beverages, Frozen Foods, Toiletries, Cleaning, Pharmacy & Health, Pet Supplies, Misc.]. Return the response in this EXACT format: 'Name: <product_name> | Category: <category>'"
+            prompt = "Look at this image and extract the name of the main grocery or shopping product. You MUST return the product name strictly in Hebrew, translating it to Hebrew if the package is in English or another language. Keep the name very brief (1-3 words). Also, categorize it into exactly one of these categories: [Fruit & Veg., Fish & Meat, Dairy & Eggs, Bakery & Bread, Pantry & Dry Goods, Snacks & Sweets, Beverages, Frozen Foods, Toiletries, Cleaning, Pharmacy & Health, Pet Supplies, Misc.]. Return the response in this EXACT format: 'Name: <product_name_in_hebrew> | Category: <category>'"
             
             response = vision_model.generate_content([prompt, image])
             text = response.text.strip()
