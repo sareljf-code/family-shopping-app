@@ -337,16 +337,16 @@
             // Group items
             const grouped = {};
             items.forEach(item => {
-                const cat = item.category || "Misc.";
+                const cat = item.category || "שונות";
                 if (!grouped[cat]) grouped[cat] = [];
                 grouped[cat].push(item);
             });
             
             // Define strict order
             const order = [
-                "Fruit & Veg.", "Fish & Meat", "Dairy & Eggs", "Bakery & Bread", 
-                "Pantry & Dry Goods", "Snacks & Sweets", "Beverages", "Frozen Foods", 
-                "Toiletries", "Cleaning", "Pharmacy & Health", "Pet Supplies", "Misc."
+                "פירות וירקות", "בשר ודגים", "מוצרי חלב וביצים", "מאפייה ולחם", 
+                "מזווה ומוצרים יבשים", "חטיפים ומתוקים", "משקאות", "קפואים", 
+                "טואלטיקה", "ניקיון", "פארמה ובריאות", "חיות מחמד", "שונות"
             ];
             // Render groups in order
             let delay = 0;

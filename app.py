@@ -94,9 +94,9 @@ def get_list():
     start_idx = 1 if has_headers else 0
     
     valid_categories = [
-        "Fruit & Veg.", "Fish & Meat", "Dairy & Eggs", "Bakery & Bread", 
-        "Pantry & Dry Goods", "Snacks & Sweets", "Beverages", "Frozen Foods", 
-        "Toiletries", "Cleaning", "Pharmacy & Health", "Pet Supplies", "Misc."
+        "פירות וירקות", "בשר ודגים", "מוצרי חלב וביצים", "מאפייה ולחם", 
+        "מזווה ומוצרים יבשים", "חטיפים ומתוקים", "משקאות", "קפואים", 
+        "טואלטיקה", "ניקיון", "פארמה ובריאות", "חיות מחמד", "שונות"
     ]
     
     items = []
@@ -116,40 +116,40 @@ def get_list():
             # Retroactively categorize empty items
             if category.strip() == "":
                 original_category = category
-                category = "Misc."
+                category = "שונות"
                 if vision_model:
                     try:
-                        cat_prompt = f"Categorize this grocery item: '{name}'. It may be in Hebrew. You MUST choose exactly one category from this exact list: [Fruit & Veg., Fish & Meat, Dairy & Eggs, Bakery & Bread, Pantry & Dry Goods, Snacks & Sweets, Beverages, Frozen Foods, Toiletries, Cleaning, Pharmacy & Health, Pet Supplies, Misc.]. Return ONLY the exact string from the list."
+                        cat_prompt = f"Categorize this grocery item: '{name}'. It may be in Hebrew. You MUST choose exactly one category from this exact list: [פירות וירקות, בשר ודגים, מוצרי חלב וביצים, מאפייה ולחם, מזווה ומוצרים יבשים, חטיפים ומתוקים, משקאות, קפואים, טואלטיקה, ניקיון, פארמה ובריאות, חיות מחמד, שונות]. Return ONLY the exact string from the list."
                         cat_response = vision_model.generate_content(cat_prompt)
                         detected_cat = cat_response.text.strip().lower()
                         
                         # Robust keyword matching
-                        if "fruit" in detected_cat or "veg" in detected_cat or "produce" in detected_cat:
-                            category = "Fruit & Veg."
-                        elif "fish" in detected_cat or "meat" in detected_cat or "poultry" in detected_cat or "chicken" in detected_cat or "beef" in detected_cat:
-                            category = "Fish & Meat"
-                        elif "dairy" in detected_cat or "egg" in detected_cat or "milk" in detected_cat or "cheese" in detected_cat:
-                            category = "Dairy & Eggs"
-                        elif "bakery" in detected_cat or "bread" in detected_cat or "pastry" in detected_cat:
-                            category = "Bakery & Bread"
-                        elif "pantry" in detected_cat or "dry" in detected_cat or "pasta" in detected_cat or "rice" in detected_cat or "can" in detected_cat:
-                            category = "Pantry & Dry Goods"
-                        elif "snack" in detected_cat or "sweet" in detected_cat or "candy" in detected_cat or "chocolate" in detected_cat or "chip" in detected_cat:
-                            category = "Snacks & Sweets"
-                        elif "beverage" in detected_cat or "drink" in detected_cat or "water" in detected_cat or "juice" in detected_cat or "soda" in detected_cat:
-                            category = "Beverages"
-                        elif "frozen" in detected_cat or "ice" in detected_cat:
-                            category = "Frozen Foods"
-                        elif "toilet" in detected_cat or "bath" in detected_cat or "personal" in detected_cat or "soap" in detected_cat or "shampoo" in detected_cat:
-                            category = "Toiletries"
-                        elif "clean" in detected_cat or "detergent" in detected_cat or "wash" in detected_cat:
-                            category = "Cleaning"
-                        elif "pharmacy" in detected_cat or "health" in detected_cat or "vitamin" in detected_cat or "medicine" in detected_cat:
-                            category = "Pharmacy & Health"
-                        elif "pet" in detected_cat or "dog" in detected_cat or "cat" in detected_cat:
-                            category = "Pet Supplies"
+                        if "פירות" in detected_cat or "fruit" in detected_cat or "veg" in detected_cat:
+                            category = "פירות וירקות"
+                        elif "בשר" in detected_cat or "דגים" in detected_cat or "fish" in detected_cat or "meat" in detected_cat:
+                            category = "בשר ודגים"
+                        elif "חלב" in detected_cat or "ביצים" in detected_cat or "dairy" in detected_cat or "egg" in detected_cat or "milk" in detected_cat:
+                            category = "מוצרי חלב וביצים"
+                        elif "מאפייה" in detected_cat or "לחם" in detected_cat or "bakery" in detected_cat or "bread" in detected_cat:
+                            category = "מאפייה ולחם"
+                        elif "מזווה" in detected_cat or "יבשים" in detected_cat or "pantry" in detected_cat or "dry" in detected_cat:
+                            category = "מזווה ומוצרים יבשים"
+                        elif "חטיפים" in detected_cat or "מתוקים" in detected_cat or "snack" in detected_cat or "sweet" in detected_cat:
+                            category = "חטיפים ומתוקים"
+                        elif "משקאות" in detected_cat or "beverage" in detected_cat or "drink" in detected_cat:
+                            category = "משקאות"
+                        elif "קפואים" in detected_cat or "frozen" in detected_cat or "ice" in detected_cat:
+                            category = "קפואים"
+                        elif "טואלטיקה" in detected_cat or "toilet" in detected_cat or "bath" in detected_cat:
+                            category = "טואלטיקה"
+                        elif "ניקיון" in detected_cat or "clean" in detected_cat or "wash" in detected_cat:
+                            category = "ניקיון"
+                        elif "פארמה" in detected_cat or "בריאות" in detected_cat or "pharmacy" in detected_cat or "health" in detected_cat:
+                            category = "פארמה ובריאות"
+                        elif "חיות" in detected_cat or "pet" in detected_cat or "dog" in detected_cat or "cat" in detected_cat:
+                            category = "חיות מחמד"
                         else:
-                            category = "Misc."
+                            category = "שונות"
                     except Exception as e:
                         print(f"Sync categorization error: {e}")
                 
@@ -170,40 +170,40 @@ def get_list():
     return jsonify(items)
 
 def background_categorize(name, sheet):
-    category = "Misc."
+    category = "שונות"
     if vision_model:
         try:
-            cat_prompt = f"Categorize this grocery item: '{name}'. It may be in Hebrew. You MUST choose exactly one category from this exact list: [Fruit & Veg., Fish & Meat, Dairy & Eggs, Bakery & Bread, Pantry & Dry Goods, Snacks & Sweets, Beverages, Frozen Foods, Toiletries, Cleaning, Pharmacy & Health, Pet Supplies, Misc.]. Return ONLY the exact string from the list."
+            cat_prompt = f"Categorize this grocery item: '{name}'. It may be in Hebrew. You MUST choose exactly one category from this exact list: [פירות וירקות, בשר ודגים, מוצרי חלב וביצים, מאפייה ולחם, מזווה ומוצרים יבשים, חטיפים ומתוקים, משקאות, קפואים, טואלטיקה, ניקיון, פארמה ובריאות, חיות מחמד, שונות]. Return ONLY the exact string from the list."
             cat_response = vision_model.generate_content(cat_prompt)
             detected_cat = cat_response.text.strip().lower()
             
             # Robust keyword matching
-            if "fruit" in detected_cat or "veg" in detected_cat or "produce" in detected_cat:
-                category = "Fruit & Veg."
-            elif "fish" in detected_cat or "meat" in detected_cat or "poultry" in detected_cat or "chicken" in detected_cat or "beef" in detected_cat:
-                category = "Fish & Meat"
-            elif "dairy" in detected_cat or "egg" in detected_cat or "milk" in detected_cat or "cheese" in detected_cat:
-                category = "Dairy & Eggs"
-            elif "bakery" in detected_cat or "bread" in detected_cat or "pastry" in detected_cat:
-                category = "Bakery & Bread"
-            elif "pantry" in detected_cat or "dry" in detected_cat or "pasta" in detected_cat or "rice" in detected_cat or "can" in detected_cat:
-                category = "Pantry & Dry Goods"
-            elif "snack" in detected_cat or "sweet" in detected_cat or "candy" in detected_cat or "chocolate" in detected_cat or "chip" in detected_cat:
-                category = "Snacks & Sweets"
-            elif "beverage" in detected_cat or "drink" in detected_cat or "water" in detected_cat or "juice" in detected_cat or "soda" in detected_cat:
-                category = "Beverages"
-            elif "frozen" in detected_cat or "ice" in detected_cat:
-                category = "Frozen Foods"
-            elif "toilet" in detected_cat or "bath" in detected_cat or "personal" in detected_cat or "soap" in detected_cat or "shampoo" in detected_cat:
-                category = "Toiletries"
-            elif "clean" in detected_cat or "detergent" in detected_cat or "wash" in detected_cat:
-                category = "Cleaning"
-            elif "pharmacy" in detected_cat or "health" in detected_cat or "vitamin" in detected_cat or "medicine" in detected_cat:
-                category = "Pharmacy & Health"
-            elif "pet" in detected_cat or "dog" in detected_cat or "cat" in detected_cat:
-                category = "Pet Supplies"
+            if "פירות" in detected_cat or "fruit" in detected_cat or "veg" in detected_cat:
+                category = "פירות וירקות"
+            elif "בשר" in detected_cat or "דגים" in detected_cat or "fish" in detected_cat or "meat" in detected_cat:
+                category = "בשר ודגים"
+            elif "חלב" in detected_cat or "ביצים" in detected_cat or "dairy" in detected_cat or "egg" in detected_cat or "milk" in detected_cat:
+                category = "מוצרי חלב וביצים"
+            elif "מאפייה" in detected_cat or "לחם" in detected_cat or "bakery" in detected_cat or "bread" in detected_cat:
+                category = "מאפייה ולחם"
+            elif "מזווה" in detected_cat or "יבשים" in detected_cat or "pantry" in detected_cat or "dry" in detected_cat:
+                category = "מזווה ומוצרים יבשים"
+            elif "חטיפים" in detected_cat or "מתוקים" in detected_cat or "snack" in detected_cat or "sweet" in detected_cat:
+                category = "חטיפים ומתוקים"
+            elif "משקאות" in detected_cat or "beverage" in detected_cat or "drink" in detected_cat:
+                category = "משקאות"
+            elif "קפואים" in detected_cat or "frozen" in detected_cat or "ice" in detected_cat:
+                category = "קפואים"
+            elif "טואלטיקה" in detected_cat or "toilet" in detected_cat or "bath" in detected_cat:
+                category = "טואלטיקה"
+            elif "ניקיון" in detected_cat or "clean" in detected_cat or "wash" in detected_cat:
+                category = "ניקיון"
+            elif "פארמה" in detected_cat or "בריאות" in detected_cat or "pharmacy" in detected_cat or "health" in detected_cat:
+                category = "פארמה ובריאות"
+            elif "חיות" in detected_cat or "pet" in detected_cat or "dog" in detected_cat or "cat" in detected_cat:
+                category = "חיות מחמד"
             else:
-                category = "Misc."
+                category = "שונות"
         except Exception as e:
             print(f"Categorization error: {e}")
             
@@ -285,12 +285,12 @@ def update_qty():
 
 def background_vision_and_categorize(image_bytes, sheet):
     product_name = "Unknown Product"
-    category = "Misc."
+    category = "שונות"
     
     if vision_model:
         try:
             image = Image.open(io.BytesIO(image_bytes))
-            prompt = "Look at this image and extract the name of the main grocery or shopping product. You MUST return the product name strictly in Hebrew, translating it to Hebrew if the package is in English or another language. Keep the name very brief (1-3 words). Also, categorize it into exactly one of these categories: [Fruit & Veg., Fish & Meat, Dairy & Eggs, Bakery & Bread, Pantry & Dry Goods, Snacks & Sweets, Beverages, Frozen Foods, Toiletries, Cleaning, Pharmacy & Health, Pet Supplies, Misc.]. Return the response in this EXACT format: 'Name: <product_name_in_hebrew> | Category: <category>'"
+            prompt = "Look at this image and extract the name of the main grocery or shopping product. You MUST return the product name strictly in Hebrew, translating it to Hebrew if the package is in English or another language. Keep the name very brief (1-3 words). Also, categorize it into exactly one of these categories: [פירות וירקות, בשר ודגים, מוצרי חלב וביצים, מאפייה ולחם, מזווה ומוצרים יבשים, חטיפים ומתוקים, משקאות, קפואים, טואלטיקה, ניקיון, פארמה ובריאות, חיות מחמד, שונות]. Return the response in this EXACT format: 'Name: <product_name_in_hebrew> | Category: <category>'"
             
             response = vision_model.generate_content([prompt, image])
             text = response.text.strip()
@@ -301,32 +301,32 @@ def background_vision_and_categorize(image_bytes, sheet):
                 detected_cat = parts[1].replace("Category:", "").strip().lower()
                 
                 # Robust keyword matching
-                if "fruit" in detected_cat or "veg" in detected_cat or "produce" in detected_cat:
-                    category = "Fruit & Veg."
-                elif "fish" in detected_cat or "meat" in detected_cat or "poultry" in detected_cat or "chicken" in detected_cat or "beef" in detected_cat:
-                    category = "Fish & Meat"
-                elif "dairy" in detected_cat or "egg" in detected_cat or "milk" in detected_cat or "cheese" in detected_cat:
-                    category = "Dairy & Eggs"
-                elif "bakery" in detected_cat or "bread" in detected_cat or "pastry" in detected_cat:
-                    category = "Bakery & Bread"
-                elif "pantry" in detected_cat or "dry" in detected_cat or "pasta" in detected_cat or "rice" in detected_cat or "can" in detected_cat:
-                    category = "Pantry & Dry Goods"
-                elif "snack" in detected_cat or "sweet" in detected_cat or "candy" in detected_cat or "chocolate" in detected_cat or "chip" in detected_cat:
-                    category = "Snacks & Sweets"
-                elif "beverage" in detected_cat or "drink" in detected_cat or "water" in detected_cat or "juice" in detected_cat or "soda" in detected_cat:
-                    category = "Beverages"
-                elif "frozen" in detected_cat or "ice" in detected_cat:
-                    category = "Frozen Foods"
-                elif "toilet" in detected_cat or "bath" in detected_cat or "personal" in detected_cat or "soap" in detected_cat or "shampoo" in detected_cat:
-                    category = "Toiletries"
-                elif "clean" in detected_cat or "detergent" in detected_cat or "wash" in detected_cat:
-                    category = "Cleaning"
-                elif "pharmacy" in detected_cat or "health" in detected_cat or "vitamin" in detected_cat or "medicine" in detected_cat:
-                    category = "Pharmacy & Health"
-                elif "pet" in detected_cat or "dog" in detected_cat or "cat" in detected_cat:
-                    category = "Pet Supplies"
+                if "פירות" in detected_cat or "fruit" in detected_cat or "veg" in detected_cat:
+                    category = "פירות וירקות"
+                elif "בשר" in detected_cat or "דגים" in detected_cat or "fish" in detected_cat or "meat" in detected_cat:
+                    category = "בשר ודגים"
+                elif "חלב" in detected_cat or "ביצים" in detected_cat or "dairy" in detected_cat or "egg" in detected_cat or "milk" in detected_cat:
+                    category = "מוצרי חלב וביצים"
+                elif "מאפייה" in detected_cat or "לחם" in detected_cat or "bakery" in detected_cat or "bread" in detected_cat:
+                    category = "מאפייה ולחם"
+                elif "מזווה" in detected_cat or "יבשים" in detected_cat or "pantry" in detected_cat or "dry" in detected_cat:
+                    category = "מזווה ומוצרים יבשים"
+                elif "חטיפים" in detected_cat or "מתוקים" in detected_cat or "snack" in detected_cat or "sweet" in detected_cat:
+                    category = "חטיפים ומתוקים"
+                elif "משקאות" in detected_cat or "beverage" in detected_cat or "drink" in detected_cat:
+                    category = "משקאות"
+                elif "קפואים" in detected_cat or "frozen" in detected_cat or "ice" in detected_cat:
+                    category = "קפואים"
+                elif "טואלטיקה" in detected_cat or "toilet" in detected_cat or "bath" in detected_cat:
+                    category = "טואלטיקה"
+                elif "ניקיון" in detected_cat or "clean" in detected_cat or "wash" in detected_cat:
+                    category = "ניקיון"
+                elif "פארמה" in detected_cat or "בריאות" in detected_cat or "pharmacy" in detected_cat or "health" in detected_cat:
+                    category = "פארמה ובריאות"
+                elif "חיות" in detected_cat or "pet" in detected_cat or "dog" in detected_cat or "cat" in detected_cat:
+                    category = "חיות מחמד"
                 else:
-                    category = "Misc."
+                    category = "שונות"
             else:
                 product_name = text[:30] # Fallback if format is weird
                 
