@@ -204,7 +204,7 @@
             color: rgba(255,255,255,0.3);
         }
 
-        .btn-add, .btn-camera {
+        .btn-add, .btn-camera, .btn-mic {
             border: none;
             border-radius: 15px;
             display: flex;
@@ -212,6 +212,26 @@
             align-items: center;
             cursor: pointer;
             transition: transform 0.2s;
+        }
+
+        .btn-mic {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            color: var(--accent);
+            padding: 0 15px;
+            position: relative;
+        }
+
+        .btn-mic.recording {
+            animation: pulse-red 1.5s infinite;
+            color: var(--danger);
+            border-color: var(--danger);
+        }
+
+        @keyframes pulse-red {
+            0% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(244, 63, 94, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0); }
         }
 
         .btn-add {
@@ -294,6 +314,9 @@
     </div>
 
     <div class="bottom-bar">
+        <button class="btn-mic" id="micBtn" title="Speak to add item">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
+        </button>
         <div class="btn-camera">
             <svg class="icon" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
             <input type="file" accept="image/*" capture="environment" id="cameraInput">
@@ -315,6 +338,7 @@
         const itemQtyEl = document.getElementById('itemQty');
         const addBtn = document.getElementById('addBtn');
         const cameraInput = document.getElementById('cameraInput');
+        const micBtn = document.getElementById('micBtn');
 
         // Fetch List
         async function fetchList() {
@@ -517,6 +541,95 @@
             // Clear input so it can trigger again
             cameraInput.value = '';
         });
+
+        // Hebrew Number Parsing
+        const hebrewNumbers = {
+            "חצי": 0.5, "רבע": 0.25,
+            "אחת": 1, "אחד": 1,
+            "שתיים": 2, "שני": 2, "שתי": 2, "פעמיים": 2,
+            "שלוש": 3, "שלושה": 3,
+            "ארבע": 4, "ארבעה": 4,
+            "חמש": 5, "חמישה": 5,
+            "שש": 6, "שישה": 6,
+            "שבע": 7, "שבעה": 7,
+            "שמונה": 8,
+            "תשע": 9, "תשעה": 9,
+            "עשר": 10, "עשרה": 10
+        };
+
+        function parseHebrewSpeech(transcript) {
+            const words = transcript.trim().split(/\s+/);
+            let qty = 1;
+            let nameParts = [];
+
+            for (let i = 0; i < words.length; i++) {
+                let word = words[i].replace(/[,.]/g, '');
+                
+                if (!isNaN(word) && word !== '') {
+                    qty = parseFloat(word);
+                } else if (hebrewNumbers[word]) {
+                    qty = hebrewNumbers[word];
+                } else {
+                    nameParts.push(words[i]);
+                }
+            }
+
+            return {
+                name: nameParts.join(' ').trim(),
+                quantity: qty
+            };
+        }
+
+        // Web Speech API
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (SpeechRecognition) {
+            const recognition = new SpeechRecognition();
+            recognition.lang = 'he-IL';
+            recognition.interimResults = false;
+            recognition.maxAlternatives = 1;
+
+            recognition.onstart = function() {
+                micBtn.classList.add('recording');
+            };
+
+            recognition.onresult = async function(event) {
+                const transcript = event.results[0][0].transcript;
+                console.log("Speech recognized:", transcript);
+                
+                const { name, quantity } = parseHebrewSpeech(transcript);
+                if (name) {
+                    try {
+                        await fetch(`${API_BASE}/api/add`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ name, quantity })
+                        });
+                        fetchList();
+                    } catch (err) {
+                        console.error("Error adding via voice:", err);
+                    }
+                }
+            };
+
+            recognition.onerror = function(event) {
+                console.error("Speech recognition error:", event.error);
+                micBtn.classList.remove('recording');
+            };
+
+            recognition.onend = function() {
+                micBtn.classList.remove('recording');
+            };
+
+            micBtn.addEventListener('click', () => {
+                if (micBtn.classList.contains('recording')) {
+                    recognition.stop();
+                } else {
+                    recognition.start();
+                }
+            });
+        } else {
+            micBtn.style.display = 'none';
+        }
 
         // Initial fetch
         fetchList();
