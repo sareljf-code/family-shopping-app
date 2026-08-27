@@ -607,12 +607,14 @@
                         fetchList();
                     } catch (err) {
                         console.error("Error adding via voice:", err);
+                        alert("Error adding item to list. Check connection.");
                     }
                 }
             };
 
             recognition.onerror = function(event) {
                 console.error("Speech recognition error:", event.error);
+                alert("Microphone error: " + event.error + "\nMake sure you have granted microphone permissions and are using HTTPS.");
                 micBtn.classList.remove('recording');
             };
 
@@ -624,7 +626,12 @@
                 if (micBtn.classList.contains('recording')) {
                     recognition.stop();
                 } else {
-                    recognition.start();
+                    try {
+                        recognition.start();
+                    } catch (e) {
+                        console.error(e);
+                        alert("Could not start microphone: " + e.message);
+                    }
                 }
             });
         } else {
