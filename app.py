@@ -371,5 +371,11 @@ def analyze_image():
         return jsonify({"error": "Google Sheets not configured"}), 500
 
 if __name__ == '__main__':
-    # Run the Flask app
-    app.run(host='0.0.0.0', port=5001, debug=True)
+    # Run the Flask app with an adhoc SSL context.
+    # This automatically creates a self-signed HTTPS certificate, which is 
+    # strictly required by mobile browsers to allow Microphone access.
+    try:
+        app.run(host='0.0.0.0', port=5001, debug=True, ssl_context='adhoc')
+    except ImportError:
+        print("HTTPS failed: pyOpenSSL is not installed. Running in HTTP mode (Microphone may be blocked on mobile).")
+        app.run(host='0.0.0.0', port=5001, debug=True)
